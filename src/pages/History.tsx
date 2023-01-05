@@ -1,5 +1,9 @@
+import { Header } from "../components/Header";
+
 export function History() {
     return (
-        <p>history</p>
+        <div>
+            <h1>History</h1>
+        </div>
     );
 }
