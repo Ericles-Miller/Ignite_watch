@@ -10,7 +10,7 @@ import { differenceInSeconds } from 'date-fns';
 const newCycleFormValidationSchema = zod.object({   //  defino que o zod recebe um object com suas definicoes de validacao
   task: zod.string().min(1, 'Informe a tarefa'),
   minutesAmount: zod.number()
-    .min(5, 'O ciclo precisa ser de no mínimo 5 minutos')
+    .min(1, 'O ciclo precisa ser de no mínimo 5 minutos')
     .max(60, 'O ciclo precisa ser de no máximo 60 minutos'),
 })
 
@@ -47,8 +47,27 @@ export function Home() {
 
     if (activeCycle) {
       interval = setInterval(() => {
-        setAmountSecondsPassed(differenceInSeconds(new Date(), activeCycle.startDate),
-        )
+        const secondsDifference =  differenceInSeconds(new Date(), activeCycle.startDate);
+        
+        if(secondsDifference >= totalSeconds) {
+          setCycles((state) => 
+            state.map((cycle) => {
+              if (cycle.id === activeCycleId) {
+                return { ...cycle, interruptDate: new Date() }
+              }
+              else {
+                return cycle
+              }
+            }), 
+          )
+          
+          setAmountSecondsPassed(totalSeconds)
+
+          clearInterval(interval)
+        }
+        else {
+          setAmountSecondsPassed(secondsDifference);
+        }
       }, 1000)
     }
 
@@ -77,8 +96,8 @@ export function Home() {
   function handleInterruptCycle() {
     setActiveCycleId(null);
 
-    setCycles(
-      cycles.map((cycle) => {
+    setCycles((state) =>
+      state.map((cycle) => {
         if (cycle.id === activeCycleId) {
           return { ...cycle, interruptDate: new Date() }
         }
@@ -134,7 +153,7 @@ export function Home() {
             type="number"
             id="minutesAmount"
             step={5}
-            min={5}
+            min={1}
             max={60}
             disabled={!!activeCycle}
             {...register('minutesAmount', { valueAsNumber: true })}
