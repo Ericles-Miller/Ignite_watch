@@ -1,6 +1,6 @@
 import { Play } from "phosphor-react";
 import { CountdownContainer, FormContainer, HomeContainer, MinuteAmountInput, Separator, StartCountDownButton, TaskInput } from "./styles";
-import {useForm, useFormState} from 'react-hook-form';
+import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import * as zod from 'zod';
 import { useEffect, useState } from "react";
@@ -41,11 +41,18 @@ export function Home() {
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
 
   useEffect(() => {
+
+    let interval: number;
+
     if(activeCycle) {
-      setInterval(() => {
+      interval = setInterval(() => {
         setAmountSecondsPassed(differenceInSeconds(new Date(), activeCycle.startDate),
       )
       }, 1000)
+    }
+
+    return () => {
+      clearInterval(interval);
     }
   }, [activeCycle])
 
@@ -63,6 +70,7 @@ export function Home() {
 
     setCycles((state) => [...state, newCycle]);
     setActiveCycleId(id);
+    setAmountSecondsPassed(0);
   }
 
   
@@ -75,6 +83,11 @@ export function Home() {
   const minutes = String(minutesAmount).padStart(2,'0'); // faco com que a string tenha 2 posicoes
   const seconds = String(secondsAmount).padStart(2,'0');
 
+  useEffect(() => {
+    if(activeCycle){
+      document.title = `${minutes}:${seconds}`;
+    }
+  }, [minutes, seconds, activeCycle])
 
   const task = watch('task');
   const isSubmitDisable = !task;
