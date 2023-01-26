@@ -5,6 +5,7 @@ import { createContext, useState } from "react";
 import { CountDown } from "./CountDown";
 import { HomeContainer, StartCountDownButton, StopCountDownButton } from "./styles";
 import { FormProvider,useForm } from "react-hook-form";
+import { NewCycleForm } from "./NewCycleForm";
 
 interface Cycle {
   id: string;
@@ -83,12 +84,22 @@ export function Home() {
     setCycles((state) => [...state, newCycle]);
     setActiveCycleId(id);
     setAmountSecondsPassed(0);
+
+    reset();
   }
 
   function handleInterruptCycle() {
+    setCycles((state) => 
+      state.map((cycle) => {
+        if(cycle.id === activeCycleId) {
+          return { ...cycle, interruptDate: new Date() }
+        }
+        else {
+          return cycle
+        }
+      }),
+    )
     setActiveCycleId(null);
-
-
   }
 
   const task = watch('task');
@@ -107,7 +118,9 @@ export function Home() {
           }}
         >
 
-        <FormProvider {...newCycleForm}/> 
+        <FormProvider {...newCycleForm}> 
+        <NewCycleForm />
+        </FormProvider>
         <CountDown />
         </CyclesContext.Provider>
 
@@ -118,7 +131,7 @@ export function Home() {
             Interromper
           </StopCountDownButton>
         ) : (
-          <StartCountDownButton /*disabled={isSubmitDisable}*/ type="submit">
+          <StartCountDownButton disabled={isSubmitDisable} type="submit">
             <Play size={24} />
             Começar
           </StartCountDownButton>
